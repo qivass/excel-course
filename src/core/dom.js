@@ -39,9 +39,34 @@ class Dom {
 
     return this;
   }
+
+  get data() {
+    return this.$el.dataset;
+  }
+
+  closest(selector) {
+    return $(this.$el.closest(selector));
+  }
+
+  getCoords() {
+    return this.$el.getBoundingClientRect();
+  }
+
+  findAll(selector) {
+    return this.$el.querySelectorAll(selector);
+  }
+
+  css(styles = {}) {
+    Object
+        .entries(styles)
+        .forEach(([key, value]) => this.$el.style[key] = value);
+  }
+
+  removeAttr(attr) {
+    this.$el.removeAttribute(attr);
+  }
 }
 
-$('div').html('<h1>test</h1>').clear();
 
 export function $(selector) {
   return new Dom(selector);

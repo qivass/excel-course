@@ -12,7 +12,9 @@
     "no-undef": "off",
     "operator-linebreak": "off",
     "no-debugger": "warn",
-    "semi": "off"
+    "semi": "off",
+    "no-invalid-this": "off",
+    "max-len": "off",
   },
   "extends": ["eslint:recommended", "google"]
 }

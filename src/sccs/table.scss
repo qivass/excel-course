@@ -15,6 +15,7 @@
     height: $row-height;
   }
   .row-info{
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,11 +24,13 @@
     border: 1px solid $border-color;
     border-top: 0;
     background: #f8f9fa;
+    user-select: none;
   }
   .row-data{
     display: flex;
   }
   .column {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -37,6 +40,12 @@
     border: 1px solid $border-color;
     border-top: 0;
     border-left: 0;
+    user-select: none;
+  }
+
+  .column > span{
+    user-select: none;
+    pointer-events: none;
   }
   .cell{
     min-width: $info-cell-width;
@@ -51,9 +60,32 @@
     outline: none;
 
     &.selected{
-      outline: 2px solid #3c74ff;
+      outline: 2px solid $primary-color;
       border: none;
       z-index: 2;
+    }
+  }
+
+
+  .col-resize {
+    @include resize();
+    top: 0;
+    z-index: 10;
+    width: 4px;
+
+    &:hover {
+      cursor: col-resize;
+    }
+  }
+
+  .row-resize {
+    @include resize();
+    left: 0;
+    z-index: 10;
+    height: 4px;
+
+    &:hover {
+      cursor: row-resize;
     }
   }
 }
