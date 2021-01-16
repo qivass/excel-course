@@ -4,6 +4,9 @@ import {resizeHandler} from '@/components/table/table.resize';
 import {shouldResize, isCell, nextSelector, matrix} from '@/components/table/table.functions';
 import TableSelection from '@/components/table/TableSelection';
 import {$} from '@core/dom';
+import * as actions from '@/redux/actions';
+import {defaultStyles} from '@/constants';
+import {parse} from '@core/parse';
 
 export class Table extends ExcelComponent {
   static classname = 'excel__table';
@@ -24,29 +27,51 @@ export class Table extends ExcelComponent {
   init() {
     super.init();
     this.selectCell(this.$root.find('[data-id="0:0"]'));
-    this.selectCell(this.$root.find('[data-id="0:0"]'));
 
-    this.$on('formula:input', text => {
-      this.selection.current.text(text);
+    this.$on('formula:input', value => {
+      const parsed = parse(value) || value;
+      this.selection.current.attr('data-value', value)
+      this.selection.current.text(parsed)
+      this.updateTextInStore(value);
     });
 
     this.$on('formula:done', () => {
       this.selection.current.focus();
     });
+
+    this.$on('toolbar:applyStyle', value => {
+      this.selection.applyStyle(value);
+      this.$dispatch(actions.applyStyle({
+        value,
+        ids: this.selection.selectedIds,
+      }))
+    });
   }
 
   selectCell($cell) {
     this.selection.select($cell);
-    this.$emit('table:select', $cell.text());
+    this.$emit('table:select', $cell);
+    const styles = $cell.getStyles(Object.keys(defaultStyles));
+    this.$dispatch(actions.changeStyles(styles))
   }
 
   toHtml() {
-    return createTable(20);
+    const state = this.$getState();
+    return createTable(20, state);
+  }
+
+  async resizeTable(event) {
+    try {
+      const data = await resizeHandler(this.$root, event);
+      this.$dispatch(actions.tableResize(data));
+    } catch (e) {
+      console.warn('resize error', e.message)
+    }
   }
 
   onMousedown(event) {
     if (shouldResize(event)) {
-      resizeHandler(this.$root, event);
+      this.resizeTable(event).then();
     } else if (isCell(event)) {
       const $target = $(event.target);
       switch (event.shiftKey) {
@@ -56,8 +81,7 @@ export class Table extends ExcelComponent {
           this.selection.selectGroup($cells);
           break;
         case false:
-          this.selection.select($target);
-          this.$emit('table:select', $target.text());
+          this.selectCell($target);
           break;
       }
     }
@@ -76,8 +100,15 @@ export class Table extends ExcelComponent {
     }
   }
 
+  updateTextInStore(value) {
+    this.$dispatch(actions.changeText({
+      id: this.selection.current.id(),
+      value
+    }))
+  }
+
   onInput(event) {
-    this.$emit('table:input', $(event.target).text())
+    this.updateTextInStore($(event.target).text());
   }
 }
 

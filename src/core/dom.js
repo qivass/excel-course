@@ -14,11 +14,16 @@ class Dom {
   }
 
   text(text) {
-    if (typeof text === 'string') {
-      this.$el.textContent = text;
+    const isInput = this.$el.tagName.toLowerCase() === 'input';
+    if (typeof text !== 'undefined') {
+      if (isInput) {
+        this.$el.value = text;
+      } else {
+        this.$el.textContent = text;
+      }
       return this;
     }
-    if (this.$el.tagName.toLowerCase() === 'input') {
+    if (isInput) {
       return this.$el.value.trim();
     }
     return this.$el.textContent.trim();
@@ -88,6 +93,13 @@ class Dom {
         .forEach(([key, value]) => this.$el.style[key] = value);
   }
 
+  getStyles(styles = []) {
+    return styles.reduce((res, s) => {
+      res[s] = this.$el.style[s];
+      return res
+    }, {});
+  }
+
   addClass(className) {
     this.$el.classList.add(className);
     return this;
@@ -104,6 +116,17 @@ class Dom {
 
   focus() {
     this.$el.focus();
+    return this;
+  }
+
+  attr(name, value) {
+    if (!name) return null;
+    if (name.startsWith('data')) {
+      const attrName = name.split('-').slice(1).join('-')
+      this.$el.dataset[attrName] = value;
+    } else {
+      this.$el.setAttribute(name, value);
+    }
     return this;
   }
 }
